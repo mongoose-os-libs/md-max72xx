@@ -22,6 +22,7 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 #include <Arduino.h>
+#include <pgmspace.h>
 #include "MD_MAX72xx.h"
 #include "MD_MAX72xx_lib.h"
 
@@ -128,7 +129,8 @@ uint8_t MD_MAX72XX::getChar(uint8_t c, uint8_t size, uint8_t *buf)
     return(0);
 
   uint16_t offset = getFontCharOffset(c);
-  size = min(size, pgm_read_byte(_fontData+offset));
+  uint8_t sz = pgm_read_byte(_fontData+offset);
+  if (sz < size) size = sz;
 
   offset++;	// skip the size byte
 

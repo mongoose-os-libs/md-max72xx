@@ -21,6 +21,7 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 #include <Arduino.h>
+#include <pgmspace.h>
 #include "MD_MAX72xx.h"
 #include "MD_MAX72xx_lib.h"
 
@@ -269,7 +270,7 @@ bool MD_MAX72XX::transformBuffer(uint8_t buf, transformType_t ttype)
         _matrix[buf].dig[i] <<= 1;
 #endif
 #else
-#warning HW_DIG_ROWS=0
+// #warning HW_DIG_ROWS=0
       for (uint8_t i=ROW_SIZE; i>0; --i)
         _matrix[buf].dig[i] = _matrix[buf].dig[i-1];
 #endif

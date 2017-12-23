@@ -214,14 +214,14 @@ enough current for the number of connected modules.
  Set to 1 (default) to use the Parola hardware modules. The
  software was originally designed to operate with this hardware type.
  */
-#define	USE_PAROLA_HW	1
+#define	USE_PAROLA_HW	0
 
 /**
  \def USE_GENERIC_HW
  Set to 1 to use 'generic' hardware modules commonly available, with
  connectors at the top and bottom of the PCB, available from many sources.
  */
-#define	USE_GENERIC_HW	0
+#define	USE_GENERIC_HW	1
 
 /**
  \def USE_ICSTATION_HW
@@ -912,10 +912,14 @@ private:
   uint8_t	_dataPin;		  // DATA is shifted out of this pin ...
   uint8_t	_clkPin;		  // ... signaled by a CLOCK on this pin ...
   uint8_t	_csPin;			  // ... and LOADed when the chip select pin is driven HIGH to LOW
+  uint8_t	_maxDevices;	// maximum number of devices in use
+  bool		_updateEnabled; // update the display when this is true, suspend otherwise
   bool		_hardwareSPI;	// true if SPI interface is the hardware interface
 
+  // Control data for the library
+  bool		_wrapAround;	  // when shifting, wrap left to right and vice versa (circular buffer)
+
   // Device buffer data
-  uint8_t	_maxDevices;	// maximum number of devices in use
   deviceInfo_t*	_matrix;// the current status of the LED matrix (buffers)
   uint8_t*	_spiData;		// data buffer for writing to SPI interface
 
@@ -923,9 +927,6 @@ private:
   uint8_t	(*_cbShiftDataIn)(uint8_t dev, transformType_t t);
   void		(*_cbShiftDataOut)(uint8_t dev, transformType_t t, uint8_t colData);
 
-  // Control data for the library
-  bool		_updateEnabled; // update the display when this is true, suspend otherwise
-  bool		_wrapAround;	  // when shifting, wrap left to right and vice versa (circular buffer)
 
 #if USE_LOCAL_FONT
   // Font related data

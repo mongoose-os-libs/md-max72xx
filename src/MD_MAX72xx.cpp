@@ -167,7 +167,22 @@ void MD_MAX72XX::controlLibrary(controlRequest_t mode, int value)
 	  case WRAPAROUND:
 		  _wrapAround = (value == ON);
 		  break;
-  }
+
+      case SHUTDOWN:
+		  break;
+
+      case INTENSITY:
+		  break;
+
+      case TEST:
+		  break;
+
+      case DECODE:
+		  break;
+
+      case SCANLIMIT:
+		  break;
+    }
 }
 
 bool MD_MAX72XX::control(uint8_t startDev, uint8_t endDev, controlRequest_t mode, int value)
@@ -287,7 +302,8 @@ void MD_MAX72XX::spiSend()
   else
   {
     for (int i = 0; i < SPI_DATA_SIZE; i++)
-      shiftOut(_dataPin, _clkPin, MSBFIRST, _spiData[i]);
+      SPI.transfer(_spiData[i]);
+      // shiftOut(_dataPin, _clkPin, MSBFIRST, _spiData[i]);
   }
 
   // end the SPI transaction

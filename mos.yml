@@ -1,0 +1,20 @@
+author: mongoose-os
+description: Port of md-max72xx as a mongoose-os lib
+type: lib
+version: 1.0
+
+sources:
+  - src
+includes:
+  - include
+libs:
+  - origin: https://github.com/mongoose-os-libs/arduino-compat
+  - origin: https://github.com/mongoose-os-libs/arduino-spi
+  - origin: https://github.com/mongoose-os-libs/spi
+
+tags:
+  - arduino
+  - c
+  - core
+
+manifest_version: 2017-09-29
