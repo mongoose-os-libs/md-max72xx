@@ -8,12 +8,25 @@ sources:
 includes:
   - include
 libs:
-  - origin: https://github.com/mongoose-os-libs/arduino-compat
-  - origin: https://github.com/mongoose-os-libs/arduino-spi
   - origin: https://github.com/mongoose-os-libs/spi
 
+config_schema:
+  - ["spi.enable", "b", true, {title: "Enable SPI"}]
+  - ["spi.unit_no", "i", 3, {title: "SPI Version: 2=HSPI, 3=VSPI"}]
+  - ["spi.debug", "b", true, {title: "Debug SPI bus activity"}]
+  # - ["debug.level", 3]
+  # - ["spi.miso_gpio", "i", 12, {title: "GPIO to use for MISO"}]
+  # - ["spi.mosi_gpio", "i", 13, {title: "GPIO to use for MOSI"}]
+  # - ["spi.sclk_gpio", "i", 14, {title: "GPIO to use for SCLK"}]
+  # - ["spi.cs0_gpio", "i", -1, {title: "GPIO to use for CS0"}]
+  # - ["spi.cs1_gpio", "i", -1, {title: "GPIO to use for CS1"}]
+  # - ["spi.cs2_gpio", "i", -1, {title: "GPIO to use for CS2"}]
+  - ["spi.miso_gpio", "i", 19, {title: "GPIO to use for MISO"}]
+  - ["spi.mosi_gpio", "i", 23, {title: "GPIO to use for MOSI"}]
+  - ["spi.sclk_gpio", "i", 18, {title: "GPIO to use for SCLK"}]
+  - ["spi.cs0_gpio", "i", 5, {title: "GPIO to use for CS0"}]
+
 tags:
-  - arduino
   - c
   - core
 

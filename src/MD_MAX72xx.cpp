@@ -21,8 +21,6 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
-#include <Arduino.h>
-#include <SPI.h>
 #include "MD_MAX72xx.h"
 #include "MD_MAX72xx_lib.h"
 
@@ -45,26 +43,7 @@ _updateEnabled(true), _hardwareSPI(true)
 
 void MD_MAX72XX::begin(void)
 {
-  // initialize the AVR hardware
-  if (_hardwareSPI)
-  {
-    PRINTS("\nHardware SPI");
-    SPI.begin();
-    // Old mode of operations!
-	  //SPI.setDataMode(SPI_MODE0);
-	  //SPI.setBitOrder(MSBFIRST);
-	  //SPI.setClockDivider(SPI_CLOCK_DIV2);
-  }
-  else
-  {
-    PRINTS("\nBitBang SPI")
-    pinMode(_dataPin, OUTPUT);
-  	pinMode(_clkPin, OUTPUT);
-  }
-
-  // initialise our preferred CS pin (could be same as SS)
-  digitalWrite(_csPin, HIGH);
-  pinMode(_csPin, OUTPUT);
+  printf("MD_MAX72XX::begin()\r\n"); // TODO
 
   // object memory and internals
   setShiftDataInCallback(NULL);
@@ -82,26 +61,11 @@ void MD_MAX72XX::begin(void)
   setFont(NULL);
 #endif // INCLUDE_LOCAL_FONT
 
-  // Initialize the display devices. On initial power-up
-  // - all control registers are reset,
-  // - scan limit is set to one digit (row/col or LED),
-  // - Decoding mode is off,
-  // - intensity is set to the minimum,
-  // - the display is blanked, and
-  // - the MAX7219/MAX7221 is shut down.
-  // The devices need to be set to our library defaults prior using the
-  // display modules.
-  control(TEST, OFF);				// no test
-  control(SCANLIMIT, ROW_SIZE-1);	// scan limit is set to max on startup
-  control(INTENSITY, MAX_INTENSITY/2);	// set intensity to a reasonable value
-  control(DECODE, OFF);				// make sure that no decoding happens (warm boot potential issue)
-  clear();
-  control(SHUTDOWN, OFF);			// take the modules out of shutdown mode
 }
 
 MD_MAX72XX::~MD_MAX72XX(void)
 {
-	if (_hardwareSPI) SPI.end();	// reset SPI mode
+  mgos_spi_close(spi);
 
 	free(_matrix);
 	free(_spiData);
@@ -286,28 +250,73 @@ void MD_MAX72XX::spiClearBuffer(void)
 	memset(_spiData, OP_NOOP, SPI_DATA_SIZE);
 }
 
+void MD_MAX72XX::spiInit()
+{
+  LOG(LL_INFO, ("Initing MAX72xx..."));
+
+  if (spi == nullptr) {
+    if (_hardwareSPI) {
+      LOG(LL_INFO, ("Using ESP32 SPI settings in mos.yml..."));
+      spi = mgos_spi_get_global();
+    } else {
+      LOG(LL_INFO, ("Configuring ESP32 SPI BUS..."));
+      struct mgos_config_spi bus_cfg = {};
+      if (_clkPin == 18 || _dataPin == 23 ) {
+        bus_cfg.unit_no = 3;
+      } else {
+        bus_cfg.unit_no = 2;
+      }
+      bus_cfg.miso_gpio = 19;
+      bus_cfg.mosi_gpio = _dataPin;
+      bus_cfg.sclk_gpio = _clkPin;
+      bus_cfg.cs0_gpio = _csPin;
+      bus_cfg.debug = true;
+      spi = mgos_spi_create(&bus_cfg);
+    }
+  }
+
+  if (spi == nullptr) {
+    LOG(LL_ERROR, ("ERROR: CAN'T CREATE SPI INTERFACE"));
+    return;
+  }
+
+  // Initialize the display devices. On initial power-up
+  // - all control registers are reset,
+  // - scan limit is set to one digit (row/col or LED),
+  // - Decoding mode is off,
+  // - intensity is set to the minimum,
+  // - the display is blanked, and
+  // - the MAX7219/MAX7221 is shut down.
+  // The devices need to be set to our library defaults prior using the
+  // display modules.
+  LOG(LL_INFO, ("Sending Max72xx control bytes..."));
+  control(TEST, OFF);				// no test
+  control(SCANLIMIT, ROW_SIZE-1);	// scan limit is set to max on startup
+  control(INTENSITY, MAX_INTENSITY/4);	// set intensity to a reasonable value
+  control(DECODE, OFF);				// make sure that no decoding happens (warm boot potential issue)
+  clear();
+  control(SHUTDOWN, OFF);			// take the modules out of shutdown mode
+  LOG(LL_INFO, ("Initing MAX72xx inited!"));
+
+}
+
 void MD_MAX72XX::spiSend()
 {
-  // initialise the SPI transaction
-  if (_hardwareSPI)
-    SPI.beginTransaction(SPISettings(8000000, MSBFIRST, SPI_MODE0));
-  digitalWrite(_csPin, LOW);
+  if (spi == nullptr) spiInit();
+  if (spi == nullptr) return;
 
-  // shift out the data
-  if (_hardwareSPI)
+  for (int i = 0; i < SPI_DATA_SIZE; i++)
   {
-    for (int i = 0; i < SPI_DATA_SIZE; i++)
-      SPI.transfer(_spiData[i]);
-  }
-  else
-  {
-    for (int i = 0; i < SPI_DATA_SIZE; i++)
-      SPI.transfer(_spiData[i]);
-      // shiftOut(_dataPin, _clkPin, MSBFIRST, _spiData[i]);
-  }
+    uint8_t data = _spiData[i];
+    
+    // printf("SPI spiSend: %u \r\n", data); // TODO
 
-  // end the SPI transaction
-  digitalWrite(_csPin, HIGH);
-  if (_hardwareSPI)
-    SPI.endTransaction();
+    txn.fd.tx_data = txn.fd.rx_data = &data;
+    txn.fd.len = sizeof(data);
+
+    if (!mgos_spi_run_txn(spi, true /* full_duplex */, &txn))
+    {
+      LOG(LL_ERROR, ("SPI transaction failed"));
+    }
+  }
 }

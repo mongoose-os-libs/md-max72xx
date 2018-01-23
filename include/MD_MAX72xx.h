@@ -202,7 +202,9 @@ enough current for the number of connected modules.
 #ifndef MD_MAX72xx_h
 #define MD_MAX72xx_h
 
+#include "mgos_spi.h"
 #include <Arduino.h>
+
 
 /**
  * \file
@@ -916,6 +918,10 @@ private:
   bool		_updateEnabled; // update the display when this is true, suspend otherwise
   bool		_hardwareSPI;	// true if SPI interface is the hardware interface
 
+  // Mongoose SPI
+  struct mgos_spi *spi;
+  struct mgos_spi_txn txn;
+
   // Control data for the library
   bool		_wrapAround;	  // when shifting, wrap left to right and vice versa (circular buffer)
 
@@ -938,7 +944,9 @@ private:
 #endif
 
   // Private functions
+  void spiInit(void);			    // do the actual physical communications task
   void spiSend(void);			    // do the actual physical communications task
+  void spiSendArduino(void);	// do the actual physical communications task
   void spiClearBuffer(void);	// clear the SPI send buffer
   void controlHardware(uint8_t dev, controlRequest_t mode, int value);	// set hardware control commands
   void controlLibrary(controlRequest_t mode, int value);	// set internal control commands
