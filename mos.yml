@@ -31,5 +31,6 @@ tags:
   - core
   - Max7219
   - spi
-
+  - docs:drivers:MAX72xx LED matrix
+ 
 manifest_version: 2017-09-29
