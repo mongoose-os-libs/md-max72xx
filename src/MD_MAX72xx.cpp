@@ -24,6 +24,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 #include "MD_MAX72xx.h"
 #include "MD_MAX72xx_lib.h"
 
+#include "common/cs_dbg.h"
+
 /**
  * \file
  * \brief Implements class definition and general methods
@@ -69,7 +71,7 @@ MD_MAX72XX::~MD_MAX72XX(void)
 
 	free(_matrix);
 	free(_spiData);
-#if USE_LOCAL_FONT && USE_FONT_INDEX
+#if USE_LOCAL_FONT && USE_INDEX_FONT
 	if (_fontIndex != NULL) free(_fontIndex);
 #endif
 }
@@ -305,7 +307,7 @@ void MD_MAX72XX::spiSend()
   if (spi == nullptr) spiInit();
   if (spi == nullptr) return;
 
-  for (int i = 0; i < SPI_DATA_SIZE; i++)
+  for (int i = 0; i < (int)SPI_DATA_SIZE; i++)
   {
     uint8_t data = _spiData[i];
     
