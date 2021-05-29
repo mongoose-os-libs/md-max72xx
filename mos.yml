@@ -8,7 +8,7 @@ sources:
 includes:
   - include
 libs:
-  - origin: https://github.com/mongoose-os-libs/spi
+  - location: https://github.com/mongoose-os-libs/spi
 
 config_schema:
   - ["spi.enable", "b", true, {title: "Enable SPI"}]
